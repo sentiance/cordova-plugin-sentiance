@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+        id="com.sentiance.sdk.cordova"
+        version="1.0.10">
+
+  <name>Sentiance SDK</name>
+  <description>The Sentiance SDK allows context-aware personalization, get behavioral insights, marketing automation, driver behavior analysis and much more.</description>
+  <license>https://www.sentiance.com/terms/sdk-standard/</license>
+  <keywords>sentiance,sdk</keywords>
+
+
+
+  <engines>
+    <engine name="cordova" version=">=3.4.0"/>
+  </engines>
+
+
+
+  <asset src="www/sentiance.js" target="js/sentiance.js"/>
+  
+  <js-module src="www/sentiance.js" name="sentiance">
+    <clobbers target="sentiance" />
+  </js-module>
+
+
+
+  <platform name="ios">
+    <hook type="before_plugin_install" src="hooks/beforeInstall.js" />
+
+    <config-file target="config.xml" parent="/*">
+      <feature name="SentianceSDK">
+        <param name="ios-package" value="SentianceSdk" />
+        <param name="onload" value="true" />
+      </feature>
+    </config-file>
+
+    <header-file src="src/ios/CallbackBindings.h"/>
+    <header-file src="src/ios/SentianceSdk.h"/>
+    <header-file src="src/ios/SentAppDelegate.h"/>
+    <source-file src="src/ios/SentianceSdk.m"/>
+    <source-file src="src/ios/SentAppDelegate.m"/>
+
+    <config-file target="*-Info.plist" parent="UIBackgroundModes">
+        <array>
+            <string>location</string>
+        </array>
+    </config-file>
+
+    <framework src="SystemConfiguration.framework"/>
+    <framework src="CoreLocation.framework"/>
+    <framework src="CoreMotion.framework"/>
+    <framework src="Foundation.framework"/>
+    <framework src="libz.tbd"/>
+
+    <framework src="src/ios/framework/SENTTransportDetectionSDK.framework" custom="true"/>
+  </platform>
+
+
+
+  <platform name="android">
+    <config-file target="config.xml" parent="/*">
+      <feature name="SentianceSDK">
+        <param name="android-package" value="com.sentiance.plugin.CordovaSentianceSDK" />
+      </feature>
+    </config-file>
+
+    <source-file src="src/android/CordovaSentianceSDK.java" target-dir="src/com/sentiance/plugin/" />
+    <source-file src="src/android/CallbackBindings.java" target-dir="src/com/sentiance/plugin/" />
+    <source-file src="src/android/BaseApplication.java" target-dir="src/com/sentiance/plugin/" />
+    <framework src="src/android/CordovaSentianceSDK.gradle" custom="true" type="gradleReference" />
+  </platform>
+
+</plugin>
