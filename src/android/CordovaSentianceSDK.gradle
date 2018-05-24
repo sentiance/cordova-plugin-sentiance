@@ -12,5 +12,5 @@ repositories {
 }
 
 dependencies {
-    compile ('com.sentiance:sdk:4.1.13-R@aar') {transitive = true}
+    compile ('com.sentiance:sdk:4.1.16-R@aar') {transitive = true}
 }
