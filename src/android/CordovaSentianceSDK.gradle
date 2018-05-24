@@ -1,0 +1,16 @@
+repositories {
+ maven {
+  url 'http://artifactory.sentiance.internal:8081/artifactory/libs-release-local'
+  credentials {
+   username = artifactoryUsername
+   password = artifactoryPassword
+  }
+ }
+ maven {
+  url "http://repository.sentiance.com"
+ }
+}
+
+dependencies {
+    compile ('com.sentiance:sdk:4.1.16-R@aar') {transitive = true}
+}
