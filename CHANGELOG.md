@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## **1.1.1** - 2018-05-28
+- Update iOS SDK to version 4.6.13
+- Exclude `extract-zip` module from `package.json` dependencies
+
 ## **1.1.0** - 2018-05-24
 - Update Android sdk version to 4.1.16-R
 - Update iOS SDK to version 5.0.0
