@@ -1,6 +1,6 @@
 // This script downloads the Sentiance SDK
 module.exports = function(ctx) {
-  var sdkVersion = "5.0.0";
+  var sdkVersion = "4.6.13";
 
   var fs = ctx.requireCordovaModule("fs"),
     path = ctx.requireCordovaModule("path"),

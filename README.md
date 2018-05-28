@@ -4,20 +4,20 @@ The plugin supports iOS and Android.
 
 
 ## Plugin repository
-[https://bitbucket.org/getjini/cordova-plugin](https://bitbucket.org/getjini/cordova-plugin)
+[https://github.com/sentiance/cordova-plugin-sentiance](https://github.com/sentiance/cordova-plugin-sentiance)
 
 
 
 ## Install
 ```
-cordova plugin add https://bitbucket.org/getjini/cordova-plugin.git
-ionic plugin add https://bitbucket.org/getjini/cordova-plugin.git
+cordova plugin add cordova-plugin-sentiance
+ionic plugin add cordova-plugin-sentiance
 ```
 
 ## Upgrade
 ```
 ionic plugin remove com.sentiance.sdk.cordova
-ionic plugin add https://bitbucket.org/getjini/cordova-plugin.git
+ionic plugin add cordova-plugin-sentiance
 ```
 
 ## Initialize SDK from app code
