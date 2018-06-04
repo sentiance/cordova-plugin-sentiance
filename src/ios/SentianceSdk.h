@@ -1,5 +1,6 @@
 #import <Cordova/CDV.h>
 #import "CallbackBindings.h"
+#import <SENTTransportDetectionSDK/SENTToken.h>
 
 @interface SentianceSdk : CDVPlugin
 
@@ -9,6 +10,7 @@
 - (void)setStartFinishedHandler:(CDVInvokedUrlCommand*)command;
 - (void)start:(CDVInvokedUrlCommand*)command;
 - (void)stop:(CDVInvokedUrlCommand*)command;
+- (void)stopAfter:(CDVInvokedUrlCommand*)command;
 - (void)isInitialized:(CDVInvokedUrlCommand*)command;
 - (void)getSdkStatus:(CDVInvokedUrlCommand*)command;
 - (void)getVersion:(CDVInvokedUrlCommand*)command;
@@ -21,6 +23,8 @@
 - (void)stopTrip:(CDVInvokedUrlCommand*)command;
 - (void)setTripTimeoutListener:(CDVInvokedUrlCommand*)command;
 - (void)isTripOngoing:(CDVInvokedUrlCommand*)command;
+- (void)registerExternalEvent:(CDVInvokedUrlCommand*)command;
+- (void)deregisterExternalEvent:(CDVInvokedUrlCommand*)command;
 - (void)submitDetections:(CDVInvokedUrlCommand*)command;
 - (void)getWiFiQuotaLimit:(CDVInvokedUrlCommand*)command;
 - (void)getWiFiQuotaUsage:(CDVInvokedUrlCommand*)command;
@@ -28,5 +32,6 @@
 - (void)getMobileQuotaUsage:(CDVInvokedUrlCommand*)command;
 - (void)getDiskQuotaLimit:(CDVInvokedUrlCommand*)command;
 - (void)getDiskQuotaUsage:(CDVInvokedUrlCommand*)command;
+- (void)getWiFiLastSeenTimestamp:(CDVInvokedUrlCommand*)command;
 
 @end

@@ -25,6 +25,13 @@ module.exports = {
         cordova.exec(success, error, "SentianceSDK", "stop", []);
     },
 
+    stopAfter: function(seconds, success, error) {
+        if(seconds == null || seconds == undefined || !seconds || seconds < 0) {
+            return error('stopAfter seconds should be a positive integer');
+        }
+        cordova.exec(success, error, "SentianceSDK", "stopAfter", [seconds]);
+    },
+
     isInitialized: function(success, error) {
         cordova.exec(function(result) {
             success(result === 'true' ? true : false);
@@ -71,10 +78,18 @@ module.exports = {
         cordova.exec(listener, null, "SentianceSDK", "setTripTimeoutListener", [listener]);
     },
 
-    isTripOngoing: function(success, tripType) {
+    isTripOngoing: function(success) {
         cordova.exec(function(result) {
             success(result === 'true' ? true : false);
-        }, null, "SentianceSDK", "isTripOngoing", [tripType]);
+        }, null, "SentianceSDK", "isTripOngoing", []);
+    },
+
+    registerExternalEvent: function(externalEventType, timestamp, id, label, success, error) {
+        cordova.exec(success, error, "SentianceSDK", "registerExternalEvent", [externalEventType, timestamp, id, label]);
+    },
+
+    deregisterExternalEvent: function(externalEventType, timestamp, id, label, success, error) {
+        cordova.exec(success, error, "SentianceSDK", "deregisterExternalEvent", [externalEventType, timestamp, id, label]);
     },
 
     submitDetections: function(success, error) {
@@ -115,6 +130,12 @@ module.exports = {
         cordova.exec(function(response) {
             success(parseInt(response));
         }, null, "SentianceSDK", "getDiskQuotaUsage", []);
+    },
+
+    getWiFiLastSeenTimestamp: function(success) {
+        cordova.exec(function(response) {
+            success(parseInt(response));
+        }, null, "SentianceSDK", "getWiFiLastSeenTimestamp", []);
     }
 
 };

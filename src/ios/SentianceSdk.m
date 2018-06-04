@@ -1,9 +1,9 @@
 #import "SentianceSdk.h"
 #import "SentAppDelegate.h"
-
-#import <SENTSDK/SENTSDK.h>
-#import <SENTSDK/SENTSDKStatus.h>
-#import <SENTSDK/SENTPublicDefinitions.h>
+#import <SENTTransportDetectionSDK/SENTSDK.h>
+#import <SENTTransportDetectionSDK/SENTConfig.h>
+#import <SENTTransportDetectionSDK/SENTInitIssue.h>
+#import <SENTTransportDetectionSDK/SENTTrip.h>
 
 
 @implementation SentianceSdk {
@@ -135,6 +135,17 @@
     }];
 }
 
+- (void)stopAfter:(CDVInvokedUrlCommand*)command {
+    int seconds = [[command.arguments objectAtIndex:0] intValue];
+
+    [self.commandDelegate runInBackground: ^{
+        [[self getSDK] stopAfter:seconds];
+        CDVPluginResult* result = [CDVPluginResult
+                               resultWithStatus:CDVCommandStatus_OK];
+        [self.commandDelegate sendPluginResult:result callbackId:[command callbackId]];
+    }];
+}
+
 - (void)isInitialized:(CDVInvokedUrlCommand*)command {
     [self.commandDelegate runInBackground: ^{
         CDVPluginResult* result = [CDVPluginResult
@@ -179,7 +190,7 @@
     NSString* callbackId = [command callbackId];
 
     [self.commandDelegate runInBackground: ^{
-        [[self getSDK] getUserAccessToken:^(NSString* token) {
+        [[self getSDK] getUserAccessToken:^(SENTToken* token) {
             CDVPluginResult* result = [CDVPluginResult
                                         resultWithStatus:CDVCommandStatus_OK
                                         messageAsDictionary:[self convertTokenToDict:token]];
@@ -206,16 +217,15 @@
     }
 
     [self.commandDelegate runInBackground: ^{
-        @try {
-            [[self getSDK] addUserMetadataField:label value:value];
+        [[self getSDK] addUserMetadataField:label value:value success:^() {
             CDVPluginResult* result = [CDVPluginResult
                                         resultWithStatus:CDVCommandStatus_OK];
             [self.commandDelegate sendPluginResult:result callbackId:callbackId];
-        } @catch (NSException *exception) {
+        } failure:^() {
             CDVPluginResult* result = [CDVPluginResult
                                         resultWithStatus:CDVCommandStatus_ERROR];
             [self.commandDelegate sendPluginResult:result callbackId:callbackId];
-        }
+        }];
     }];
 }
 
@@ -231,16 +241,15 @@
     }
 
     [self.commandDelegate runInBackground: ^{
-        @try {
-            [[self getSDK] removeUserMetadataField:label];
+        [[self getSDK] removeUserMetadataField:label success:^() {
             CDVPluginResult* result = [CDVPluginResult
                                         resultWithStatus:CDVCommandStatus_OK];
             [self.commandDelegate sendPluginResult:result callbackId:callbackId];
-        } @catch (NSException *exception) {
+        } failure:^() {
             CDVPluginResult* result = [CDVPluginResult
                                         resultWithStatus:CDVCommandStatus_ERROR];
             [self.commandDelegate sendPluginResult:result callbackId:callbackId];
-        }
+        }];
     }];
 }
 
@@ -256,16 +265,15 @@
     }
 
     [self.commandDelegate runInBackground: ^{
-        @try {
-            [[self getSDK] addUserMetadataFields:metadata];
+        [[self getSDK] addUserMetadataFields:metadata success:^() {
             CDVPluginResult* result = [CDVPluginResult
                                         resultWithStatus:CDVCommandStatus_OK];
             [self.commandDelegate sendPluginResult:result callbackId:callbackId];
-        } @catch (NSException *exception) {
+        } failure:^() {
             CDVPluginResult* result = [CDVPluginResult
                                         resultWithStatus:CDVCommandStatus_ERROR];
             [self.commandDelegate sendPluginResult:result callbackId:callbackId];
-        }
+        }];
     }];
 }
 
@@ -277,15 +285,10 @@
 
     [self.commandDelegate runInBackground: ^{
         @try {
-            [[self getSDK] startTrip:metadata transportModeHint:mode success:^{
-                CDVPluginResult* result = [CDVPluginResult
+            [[self getSDK] startTrip:metadata transportModeHint:mode];
+            CDVPluginResult* result = [CDVPluginResult
                                         resultWithStatus:CDVCommandStatus_OK];
-                [self.commandDelegate sendPluginResult:result callbackId:callbackId];
-            } failure:^(SENTSDKStatus *status) {
-                CDVPluginResult* result = [CDVPluginResult
-                                        resultWithStatus:CDVCommandStatus_ERROR];
-                [self.commandDelegate sendPluginResult:result callbackId:callbackId];
-            }];
+            [self.commandDelegate sendPluginResult:result callbackId:callbackId];
         } @catch (NSException *exception) {
             CDVPluginResult* result = [CDVPluginResult
                                         resultWithStatus:CDVCommandStatus_ERROR];
@@ -298,15 +301,11 @@
     NSString* callbackId = [command callbackId];
     [self.commandDelegate runInBackground: ^{
         @try {
-            [[self getSDK] stopTrip:^{
-                CDVPluginResult* result = [CDVPluginResult
-                                        resultWithStatus:CDVCommandStatus_OK];
-                [self.commandDelegate sendPluginResult:result callbackId:callbackId];
-            } failure:^(SENTSDKStatus *status) {
-                CDVPluginResult* result = [CDVPluginResult
-                                        resultWithStatus:CDVCommandStatus_ERROR];
-                [self.commandDelegate sendPluginResult:result callbackId:callbackId];
-            }];
+            SENTTrip* tripObj = [[self getSDK] stopTrip];
+            CDVPluginResult* result = [CDVPluginResult
+                                        resultWithStatus:CDVCommandStatus_OK
+                                        messageAsDictionary:[self convertTripToDict:tripObj]];
+            [self.commandDelegate sendPluginResult:result callbackId:callbackId];
         } @catch (NSException *exception) {
             CDVPluginResult* result = [CDVPluginResult
                                         resultWithStatus:CDVCommandStatus_ERROR];
@@ -317,9 +316,10 @@
 
 - (void)setTripTimeoutListener:(CDVInvokedUrlCommand*)command {
     [self.commandDelegate runInBackground: ^{
-        [[self getSDK] setTripTimeOutListener:^{
+        [[self getSDK] setTripTimeOutListener:^(SENTTrip *trip) {
             CDVPluginResult* result = [CDVPluginResult
-                                        resultWithStatus:CDVCommandStatus_OK];
+                                        resultWithStatus:CDVCommandStatus_OK
+                                        messageAsDictionary:[self convertTripToDict:trip]];
             [result setKeepCallbackAsBool:TRUE];
             [self.commandDelegate sendPluginResult:result callbackId:[command callbackId]];
         }];
@@ -327,23 +327,54 @@
 }
 
 - (void)isTripOngoing:(CDVInvokedUrlCommand*)command {
-    SENTTripType tripType = [[command.arguments objectAtIndex:0] integerValue];
     [self.commandDelegate runInBackground: ^{
         CDVPluginResult* result = [CDVPluginResult
                                         resultWithStatus:CDVCommandStatus_OK
-                                        messageAsString: [[self getSDK] isTripOngoing:tripType] ? @"true" : @"false"];
+                                        messageAsString: [[self getSDK] isTripOngoing] ? @"true" : @"false"];
+        [self.commandDelegate sendPluginResult:result callbackId:[command callbackId]];
+    }];
+}
+
+- (void)registerExternalEvent:(CDVInvokedUrlCommand*)command {
+    NSNumber* typeInt = [command.arguments objectAtIndex:0];
+    NSNumber* timestamp = [command.arguments objectAtIndex:1];
+    NSString* Id = [command.arguments objectAtIndex:2];
+    NSString* label = [command.arguments objectAtIndex:3];
+    SENTExternalEventType type = (SENTExternalEventType)[typeInt intValue];
+
+    [self.commandDelegate runInBackground: ^{
+        [[self getSDK] registerExternalEvent:type timestamp:[timestamp longLongValue] id:Id label:label];
+        CDVPluginResult* result = [CDVPluginResult
+                                        resultWithStatus:CDVCommandStatus_OK];
+        [self.commandDelegate sendPluginResult:result callbackId:[command callbackId]];
+    }];
+}
+
+- (void)deregisterExternalEvent:(CDVInvokedUrlCommand*)command {
+    NSNumber* typeInt = [command.arguments objectAtIndex:0];
+    NSNumber* timestamp = [command.arguments objectAtIndex:1];
+    NSString* Id = [command.arguments objectAtIndex:2];
+    NSString* label = [command.arguments objectAtIndex:3];
+    SENTExternalEventType type = (SENTExternalEventType)[typeInt intValue];
+
+    [self.commandDelegate runInBackground: ^{
+        [[self getSDK] deregisterExternalEvent:type timestamp:[timestamp longLongValue] id:Id label:label];
+        CDVPluginResult* result = [CDVPluginResult
+                                        resultWithStatus:CDVCommandStatus_OK];
         [self.commandDelegate sendPluginResult:result callbackId:[command callbackId]];
     }];
 }
 
 - (void)submitDetections:(CDVInvokedUrlCommand*)command {
     [self.commandDelegate runInBackground: ^{
-        [[self getSDK] submitDetections:^{
-            CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-            [self.commandDelegate sendPluginResult:result callbackId:[command callbackId]];
-        } failure: ^{
-            CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+        [[self getSDK] submitDetections:^(BOOL status, NSError* error) {
+            CDVPluginResult* result;
+            if (status) {
+                result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+            } else {
+                result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
                                           messageAsString:@"Couldn't submit all detections"];
+            }
             [self.commandDelegate sendPluginResult:result callbackId:[command callbackId]];
         }];
     }];
@@ -397,6 +428,14 @@
     }];
 }
 
+- (void)getWiFiLastSeenTimestamp:(CDVInvokedUrlCommand*)command {
+    [self.commandDelegate runInBackground: ^{
+        CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+            messageAsNSUInteger:[[self getSDK] getWiFiLastSeenTimestamp]];
+        [self.commandDelegate sendPluginResult:result callbackId:[command callbackId]];
+    }];
+}
+
 - (SENTSDK*)getSDK {
     if (((SentAppDelegate*)[super appDelegate]).sentianceSDK == nil)
         ((SentAppDelegate*)[super appDelegate]).sentianceSDK = [SENTSDK sharedInstance];
@@ -424,18 +463,35 @@
     return dict;
 }
 
-- (NSMutableDictionary*)convertTokenToDict:(NSString*) token {
+- (NSMutableDictionary*)convertTokenToDict:(SENTToken*) token {
     NSMutableDictionary* dict = [[NSMutableDictionary alloc] init];
 
-    if (token == nil) {
+    if (token == nil)
         return dict;
-    }
 
-    [dict setValue:token forKey:@"tokenId"];    
+    NSTimeInterval interval = [token.expiryDate timeIntervalSince1970];
+    NSInteger time = interval * 1000;
+
+    [dict setValue:token.tokenId forKey:@"tokenId"];
+    [dict setValue:[NSNumber numberWithLongLong:(long)time] forKey:@"expiryDate"];
 
     return dict;
 }
 
+- (NSMutableDictionary*)convertTripToDict:(SENTTrip*) trip {
+    NSMutableDictionary* dict = [[NSMutableDictionary alloc] init];
+
+    if (trip == nil)
+        return dict;
+
+    [dict setValue:trip.tripId forKey:@"tripId"];
+    [dict setValue:[NSNumber numberWithLongLong:trip.start] forKey:@"start"];
+    [dict setValue:[NSNumber numberWithLongLong:trip.stop] forKey:@"stop"];
+    [dict setValue:[NSNumber numberWithLongLong:trip.distance] forKey:@"distance"];
+    [dict setValue:trip.pWaypointsArray forKey:@"waypoints"];
+
+    return dict;
+}
 
 - (NSString*)covertInitIssueToString:(SENTInitIssue) issue {
     if (issue == SENTInitIssueInvalidCredentials) {

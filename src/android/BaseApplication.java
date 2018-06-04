@@ -90,7 +90,8 @@ public abstract class BaseApplication extends Application implements CallbackBin
 
         final Sentiance sdk = Sentiance.getInstance(getApplicationContext());
 
-        final SdkConfig sdkConfig = new SdkConfig.Builder(getAppID(), getSecret(), getNotification())
+        final SdkConfig sdkConfig = new SdkConfig.Builder(getAppID(), getSecret())
+                .enableForeground(getNotification())
                 .setOnSdkStatusUpdateHandler(new OnSdkStatusUpdateHandler() {
                     @Override
                     public void onSdkStatusUpdate(SdkStatus status) {

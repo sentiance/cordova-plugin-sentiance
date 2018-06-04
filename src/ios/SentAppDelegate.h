@@ -1,7 +1,7 @@
 #import <Cordova/CDVViewController.h>
 #import <Cordova/CDVAppDelegate.h>
-#import <SENTSDK/SENTSDK.h>
-#import <SENTSDK/SENTConfig.h>
+#import <SENTTransportDetectionSDK/SENTSDK.h>
+#import <SENTTransportDetectionSDK/SENTConfig.h>
 #import "CallbackBindings.h"
 
 @interface SentAppDelegate : CDVAppDelegate <CallbackBindings> {}

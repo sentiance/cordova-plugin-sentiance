@@ -7,6 +7,7 @@ import com.sentiance.plugin.CallbackBindings;
 
 import com.sentiance.core.model.thrift.ExternalEventType;
 import com.sentiance.core.model.thrift.TransportMode;
+import com.sentiance.sdk.MetadataCallback;
 import com.sentiance.sdk.OnInitCallback;
 import com.sentiance.sdk.OnSdkStatusUpdateHandler;
 import com.sentiance.sdk.OnStartFinishedHandler;
@@ -18,10 +19,12 @@ import com.sentiance.sdk.SdkConfig.Builder;
 import com.sentiance.sdk.SubmitDetectionsCallback;
 import com.sentiance.sdk.Token;
 import com.sentiance.sdk.TokenResultCallback;
-import com.sentiance.sdk.trip.TripTimeoutListener;
-import com.sentiance.sdk.trip.StartTripCallback;
-import com.sentiance.sdk.trip.StopTripCallback;
-import com.sentiance.sdk.trip.TripType;
+import com.sentiance.sdk.TripTimeoutListener;
+import com.sentiance.sdk.InvalidConfigurationException;
+import com.sentiance.sdk.modules.trip.Trip;
+import com.sentiance.sdk.modules.trip.Waypoint;
+import com.sentiance.sdk.StartTripCallback;
+import com.sentiance.sdk.StopTripCallback;
 
 import android.content.Intent;
 import android.app.Notification;
@@ -107,39 +110,38 @@ public class CordovaSentianceSDK extends CordovaPlugin {
                 final String appId = arguments.getString(0);
                 final String secret = arguments.getString(1);
                 JSONObject _notificationConfig = null;
-                if (!arguments.isNull(2)) {
+                if(!arguments.isNull(2)) {
                     _notificationConfig = arguments.getJSONObject(2);
                 }
                 final JSONObject notificationConfig = _notificationConfig;
 
-                if (notificationConfig == null) {
-                    callback.error("notificationConfig is required");
-                    return true;
-                }
-
-                if (notificationConfig.getString("mainActivityFullClassname") == null) {
-                    callback.error("notification.mainActivityFullClassname is required");
-                    return true;
-                }
-                if (notificationConfig.getString("drawableIdentifier") == null) {
-                    callback.error("notification.drawableIdentifier is required");
-                    return true;
-                }
-                if (notificationConfig.getString("notificationTitle") == null) {
-                    callback.error("notification.notificationTitle is required");
-                    return true;
-                }
-                if (notificationConfig.getString("notificationText") == null) {
-                    callback.error("notification.notificationText is required");
-                    return true;
+                if(notificationConfig != null) {
+                    if(notificationConfig.getString("mainActivityFullClassname") == null) {
+                        callback.error("notification.mainActivityFullClassname is required");
+                        return true;
+                    }
+                    if(notificationConfig.getString("drawableIdentifier") == null) {
+                        callback.error("notification.drawableIdentifier is required");
+                        return true;
+                    }
+                    if(notificationConfig.getString("notificationTitle") == null) {
+                        callback.error("notification.notificationTitle is required");
+                        return true;
+                    }
+                    if(notificationConfig.getString("notificationText") == null) {
+                        callback.error("notification.notificationText is required");
+                        return true;
+                    }
                 }
 
                 cordova.getThreadPool().execute(new Runnable() {
                     public void run() {
-                        try {
-                            Intent intent = new Intent(context, Class.forName(notificationConfig.getString("mainActivityFullClassname"))).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                            PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
-                            Notification notification = new NotificationCompat.Builder(context)
+                        Builder configBuilder = new SdkConfig.Builder(appId,secret);
+                        if(notificationConfig != null) {
+                            try {
+                                Intent intent = new Intent(context, Class.forName(notificationConfig.getString("mainActivityFullClassname"))).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
+                                Notification notification = new NotificationCompat.Builder(context)
                                     .setContentTitle(notificationConfig.getString("notificationTitle"))
                                     .setContentText(notificationConfig.getString("notificationText"))
                                     .setShowWhen(false)
@@ -147,15 +149,18 @@ public class CordovaSentianceSDK extends CordovaPlugin {
                                     .setContentIntent(pendingIntent)
                                     .setPriority(NotificationCompat.PRIORITY_MIN)
                                     .build();
-                            SdkConfig sdkConfig = new SdkConfig.Builder(appId, secret, notification)
-                                    .setOnSdkStatusUpdateHandler(onSdkStatusUpdateCallback)
-                                    .build();
-                            sdk.init(sdkConfig, onInitCallback);
-                        } catch(JSONException exception) {
-                            callback.error("Could not create notification, please check your sdk configuration");
-                        } catch(ClassNotFoundException exception) {
-                            callback.error("Could not find class for notification.mainActivityFullClassname");
+                                configBuilder.enableForeground(notification);
+                           } catch(JSONException exception) {
+                               callback.error("Could not create notification, please check your sdk configuration");
+                           } catch(ClassNotFoundException exception) {
+                                callback.error("Could not find class for notification.mainActivityFullClassname");
+                            }
                         }
+
+                        configBuilder.setOnSdkStatusUpdateHandler(onSdkStatusUpdateCallback);
+
+                        final SdkConfig sdkConfig = configBuilder.build();
+                        sdk.init(sdkConfig, onInitCallback);
                     }
                 });
                 return true;
@@ -194,6 +199,14 @@ public class CordovaSentianceSDK extends CordovaPlugin {
                 cordova.getThreadPool().execute(new Runnable() {
                     public void run() {
                         sdk.stop();
+                    }
+                });
+                return true;
+            } else if (action.equals("stopAfter")) {
+                final int seconds = arguments.getInt(0);
+                cordova.getThreadPool().execute(new Runnable() {
+                    public void run() {
+                        sdk.stopAfter(seconds);
                     }
                 });
                 return true;
@@ -248,8 +261,18 @@ public class CordovaSentianceSDK extends CordovaPlugin {
 
                 cordova.getThreadPool().execute(new Runnable() {
                     public void run() {
-                        sdk.addUserMetadataField(label, value);
-                        callback.success();
+
+                        sdk.addUserMetadataField(label, value, new MetadataCallback() {
+                            @Override
+                            public void onSuccess() {
+                                callback.success();
+                            }
+
+                            @Override
+                            public void onFailure() {
+                                callback.error("Couldn't submit metadata");
+                            }
+                        });
                     }
                 });
                 return true;
@@ -259,8 +282,17 @@ public class CordovaSentianceSDK extends CordovaPlugin {
 
                 cordova.getThreadPool().execute(new Runnable() {
                     public void run() {
-                        sdk.addUserMetadataFields(map);
-                        callback.success();
+                        sdk.addUserMetadataFields(map, new MetadataCallback() {
+                            @Override
+                            public void onSuccess() {
+                                callback.success();
+                            }
+
+                            @Override
+                            public void onFailure() {
+                                callback.error("Couldn't submit metadata");
+                            }
+                        });
                     }
                 });
                 return true;
@@ -269,22 +301,32 @@ public class CordovaSentianceSDK extends CordovaPlugin {
 
                 cordova.getThreadPool().execute(new Runnable() {
                     public void run() {
-                        sdk.removeUserMetadataField(label);
-                        callback.success();
+
+                        sdk.removeUserMetadataField(label, new MetadataCallback() {
+                            @Override
+                            public void onSuccess() {
+                                callback.success();
+                            }
+
+                            @Override
+                            public void onFailure() {
+                                callback.error("Couldn't remove metadata?");
+                            }
+                        });
                     }
                 });
                 return true;
             } else if (action.equals("startTrip")) {
                 final Map<String, String> metadata = jsonObjectToMap(arguments.optJSONObject(0));
-                String hintParam = arguments.optString(1, null);
-                final TransportMode hint = hintParam == null ? null : TransportMode.valueOf(hintParam);
+                int hintParam = arguments.optInt(1, -1);
+                final TransportMode hint = hintParam == -1 ? null : TransportMode.findByValue(hintParam);
 
                 cordova.getThreadPool().execute(new Runnable() {
                     public void run() {
                         sdk.startTrip(metadata, hint, new StartTripCallback() {
                             @Override
-                            public void onSuccess() {
-                                callback.success();
+                                public void onSuccess() {
+                                  callback.success();
                             }
 
                             @Override
@@ -300,13 +342,8 @@ public class CordovaSentianceSDK extends CordovaPlugin {
                     public void run() {
                         sdk.stopTrip(new StopTripCallback() {
                             @Override
-                            public void onSuccess() {
-                                callback.success();
-                            }
-
-                            @Override
-                            public void onFailure(SdkStatus sdkStatus) {
-                                callback.error(convertSdkStatusToJson(sdkStatus));
+                            public void onTripStopped(Trip trip) {
+                                callback.success(convertTripToJson(trip));
                             }
                         });
                     }
@@ -317,8 +354,8 @@ public class CordovaSentianceSDK extends CordovaPlugin {
                     public void run() {
                         sdk.setTripTimeoutListener(new TripTimeoutListener() {
                             @Override
-                            public void onTripTimeout() {
-                                PluginResult result = new PluginResult(PluginResult.Status.OK);
+                            public void onTripTimeout(Trip trip) {
+                                PluginResult result = new PluginResult(PluginResult.Status.OK, convertTripToJson(trip));
                                 result.setKeepCallback(true);   // keep it since it's set once but called many times.
                                 callback.sendPluginResult(result);
                             }
@@ -327,11 +364,37 @@ public class CordovaSentianceSDK extends CordovaPlugin {
                 });
                 return true;
             } else if (action.equals("isTripOngoing")) {
-                String typeParam = arguments.getString(0);
-                final TripType type = toTripType(typeParam.toLowerCase());
                 cordova.getThreadPool().execute(new Runnable() {
                     public void run() {
-                        callback.success(sdk.isTripOngoing(type) ? "true" : "false");
+                        callback.success(sdk.isTripOngoing() ? "true" : "false");
+                    }
+                });
+                return true;
+            } else if (action.equals("registerExternalEvent")) {
+                int typeParam = arguments.getInt(0);
+                final ExternalEventType type = ExternalEventType.findByValue(typeParam);
+                final long timestamp = arguments.getLong(1);
+                final String id = arguments.getString(2);
+                final String label = arguments.optString(3, null);
+
+                cordova.getThreadPool().execute(new Runnable() {
+                    public void run() {
+                        sdk.registerExternalEvent(type, timestamp, id, label);
+                        callback.success();
+                    }
+                });
+                return true;
+            } else if (action.equals("deregisterExternalEvent")) {
+                int typeParam = arguments.getInt(0);
+                final ExternalEventType type = ExternalEventType.findByValue(typeParam);
+                final long timestamp = arguments.getLong(1);
+                final String id = arguments.getString(2);
+                final String label = arguments.optString(3, null);
+
+                cordova.getThreadPool().execute(new Runnable() {
+                    public void run() {
+                        sdk.deregisterExternalEvent(type, timestamp, id, label);
+                        callback.success();
                     }
                 });
                 return true;
@@ -392,6 +455,13 @@ public class CordovaSentianceSDK extends CordovaPlugin {
                     }
                 });
                 return true;
+            } else if (action.equals("getWiFiLastSeenTimestamp")) {
+                cordova.getThreadPool().execute(new Runnable() {
+                    public void run() {
+                        callback.success(String.valueOf(sdk.getWiFiLastSeenTimestamp()));
+                    }
+                });
+                return true;
             }
         } catch(Exception e) {
             // Generic error handler
@@ -399,20 +469,8 @@ public class CordovaSentianceSDK extends CordovaPlugin {
             callback.error(convertExceptionToJson(e));
             return true;
         }
-        log("NO IMPLEMENTATION FOR THIS IN SENTIANCE SDK JAVA PLUGIN: " + action);
+        log("NO IMPLEMENTATION FOR THIS IN SENTIANCE SDK JAVA PLUGIN");
         return false;
-    }
-
-    private TripType toTripType(final String type) {
-        if(type.equals("sdk")) {
-            return TripType.SDK_TRIP;
-        }
-        else if (type.equals("external")) {
-            return TripType.EXTERNAL_TRIP;
-        }
-        else {
-            return TripType.ANY;
-        }
     }
 
     private void log(String msg, Object... params) {
@@ -460,6 +518,35 @@ public class CordovaSentianceSDK extends CordovaPlugin {
         try {
             result.put("tokenId", token.getTokenId());
             result.put("expiryDate", token.getExpiryDate().getTime());
+        } catch (JSONException ignored) {
+        }
+
+        return result;
+    }
+
+    private JSONObject convertTripToJson(Trip trip) {
+        JSONObject result = new JSONObject();
+
+        if (trip == null) {
+            return result;
+        }
+
+        try {
+            result.put("tripId", trip.tripId);
+            result.put("start", trip.start);
+            result.put("stop", trip.stop);
+            result.put("distance", trip.distance);
+
+            JSONArray waypoints = new JSONArray();
+            for(Waypoint waypoint : trip.waypoints) {
+                JSONObject jsonWaypoint = new JSONObject();
+                jsonWaypoint.put("timestamp", waypoint.timestamp);
+                jsonWaypoint.put("latitude", waypoint.latitude);
+                jsonWaypoint.put("longitude", waypoint.longitude);
+                jsonWaypoint.put("accuracy", waypoint.accuracy);
+                waypoints.put(jsonWaypoint);
+            }
+            result.put("waypoints", waypoints);
         } catch (JSONException ignored) {
         }
 

@@ -1,5 +1,5 @@
-#import <SENTSDK/SENTSDKStatus.h>
-#import <SENTSDK/SENTPublicDefinitions.h>
+#import <SENTTransportDetectionSDK/SENTInitIssue.h>
+#import <SENTTransportDetectionSDK/SENTSDKStatus.h>
 
 @protocol CallbackBindings <NSObject>
 @optional
