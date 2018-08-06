@@ -46,13 +46,15 @@
         </array>
     </config-file>
 
+    <framework src="libz.tbd"/>
+    <framework src="CoreMotion.framework"/>
     <framework src="SystemConfiguration.framework"/>
     <framework src="CoreLocation.framework"/>
-    <framework src="CoreMotion.framework"/>
     <framework src="Foundation.framework"/>
-    <framework src="libz.tbd"/>
-
-    <framework src="src/ios/framework/SENTTransportDetectionSDK.framework" custom="true"/>
+    <framework src="CallKit.framework"/>
+    <framework src="CoreTelephony.framework"/>
+    <framework src="CoreData.framework"/>
+    <framework src="src/ios/framework/SENTSDK.framework" custom="true"/>
   </platform>
 
 
