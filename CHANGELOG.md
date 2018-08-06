@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## **2.0.0** - 2018-08-06
+- Update iOS sdk version to 5.0.6
+- Added required iOS framework files in plugin config
+
 ## **1.1.3** - 2018-08-06
 - Update Android sdk version to 4.1.20-R
 
