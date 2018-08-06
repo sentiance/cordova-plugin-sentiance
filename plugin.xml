@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
         id="com.sentiance.sdk.cordova"
-        version="1.1.3">
+        version="2.0.0">
 
   <name>Sentiance SDK</name>
   <description>The Sentiance SDK allows context-aware personalization, get behavioral insights, marketing automation, driver behavior analysis and much more.</description>
@@ -46,13 +46,15 @@
         </array>
     </config-file>
 
+    <framework src="libz.tbd"/>
+    <framework src="CoreMotion.framework"/>
     <framework src="SystemConfiguration.framework"/>
     <framework src="CoreLocation.framework"/>
-    <framework src="CoreMotion.framework"/>
     <framework src="Foundation.framework"/>
-    <framework src="libz.tbd"/>
-
-    <framework src="src/ios/framework/SENTTransportDetectionSDK.framework" custom="true"/>
+    <framework src="CallKit.framework"/>
+    <framework src="CoreTelephony.framework"/>
+    <framework src="CoreData.framework"/>
+    <framework src="src/ios/framework/SENTSDK.framework" custom="true"/>
   </platform>
 
 

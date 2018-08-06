@@ -65,20 +65,20 @@ $ionicPlatform.ready(function() {
 ### AppDelegate.h:
 Include the framework
 ```
-#import <SENTTransportDetectionSDK/SENTTransportDetectionSDK.h>
+#import <SENTSDK/SENTSDK.h>
 ```
 Add an instance variable
 ```
-@property SENTTransportDetectionSDK* sentianceSdk;
+@property SENTSDK* sentianceSdk;
 ```
 
 Full example:
 ```
-#import <SENTTransportDetectionSDK/SENTTransportDetectionSDK.h>
+#import <SENTSDK/SENTSDK.h>
 
 @interface AppDelegate : NSObject <UIApplicationDelegate>{}
 // ...
-@property SENTTransportDetectionSDK* sentianceSdk;
+@property SENTSDK* sentianceSdk;
 // ...
 @end
 ```
@@ -89,8 +89,8 @@ Full example:
 
 Start the SDK before any other location managers
 ```
-if( [SENTTransportDetectionSDK isAuthenticated] ) {
-    self.sentianceSdk = [[SENTTransportDetectionSDK alloc] initWithConfigurationData:@{ @"launchOptions": launchOptions == nil ? @{} : launchOptions }]; 
+if( [SENTSDK isAuthenticated] ) {
+    self.sentianceSdk = [[SENTSDK alloc] initWithConfigurationData:@{ @"launchOptions": launchOptions == nil ? @{} : launchOptions }]; 
 }
 ```
 
@@ -98,8 +98,8 @@ Full example:
 ```
 - (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions {
     // ...
-    if( [SENTTransportDetectionSDK isAuthenticated] ) {
-        self.sentianceSdk = [[SENTTransportDetectionSDK alloc] initWithConfigurationData:@{ @"launchOptions": launchOptions == nil ? @{} : launchOptions }]; 
+    if( [SENTSDK isAuthenticated] ) {
+        self.sentianceSdk = [[SENTSDK alloc] initWithConfigurationData:@{ @"launchOptions": launchOptions == nil ? @{} : launchOptions }]; 
     }
    // ...
 }
@@ -188,7 +188,7 @@ exclude group: '$groupName'
 For example, if you want to remove `com.google.android.gms` from our SDK, you can update `platforms/android/com.sentiance.sdk.cordova/app-CordovaSentianceSDK.gradle`
 ```
 dependencies {
-    compile ('com.sentiance:sdk:3.3.4@aar') {
+    compile ('com.sentiance:sdk:4.1.20-R@aar') {
       transitive = true
       exclude group: 'com.google.android.gms'
     }

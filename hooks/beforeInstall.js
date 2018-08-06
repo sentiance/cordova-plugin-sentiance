@@ -1,6 +1,6 @@
 // This script downloads the Sentiance SDK
 module.exports = function(ctx) {
-  var sdkVersion = "4.6.13";
+  var sdkVersion = "5.0.6";
 
   var fs = ctx.requireCordovaModule("fs"),
     path = ctx.requireCordovaModule("path"),
@@ -20,7 +20,7 @@ module.exports = function(ctx) {
   };
 
   var frameworkUrl =
-    "https://s3-eu-west-1.amazonaws.com/sentiance-sdk/ios/transport/SENTTransportDetectionSDK-" +
+    "https://s3-eu-west-1.amazonaws.com/sentiance-sdk/ios/transport/SENTSDK-" +
     sdkVersion +
     ".framework.zip";
 
@@ -35,8 +35,7 @@ module.exports = function(ctx) {
       sdkVersion
   );
 
-  var archivePath =
-    ctx.opts.plugin.dir + "/src/ios/SENTTransportDetectionSDK.framework.zip";
+  var archivePath = ctx.opts.plugin.dir + "/src/ios/SENTSDK.framework.zip";
   var frameworkPath = ctx.opts.plugin.dir + "/src/ios/framework";
   download(frameworkUrl, archivePath, function() {
     console.log("com.sentiance.sdk.cordova: extracting framework");
