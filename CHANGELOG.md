@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## **1.1.3** - 2018-08-06
+- Update Android sdk version to 4.1.20-R
+
 ## **1.1.2** - 2018-05-28
 - Add extract-zip to bundled dependencies
 - Update README with new repo info
