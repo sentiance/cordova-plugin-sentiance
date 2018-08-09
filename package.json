@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-sentiance",
-  "version": "2.0.0",
+  "version": "2.0.2",
   "description": "Cordova plugin for the Sentiance SDK",
   "main": "www/sentiance.js",
   "dependencies": {},
