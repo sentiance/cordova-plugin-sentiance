@@ -1,0 +1,6 @@
+framework module SENTSDK {
+  umbrella header "SENTSDK.h"
+
+  export *
+  module * { export * }
+}

@@ -5,9 +5,6 @@
   "main": "www/sentiance.js",
   "dependencies": {},
   "devDependencies": {},
-  "bundledDependencies": [
-    "extract-zip"
-  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
